@@ -1,71 +1,235 @@
+<!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MaxNT Official</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css">
     <style>
+        /* Загальні стилі */
         body {
-            margin: 0;
             font-family: Arial, sans-serif;
-            background-color: #32CD32; /* Красивий зелений фон */
-            color: white;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
         }
 
         header {
+            background-color: #28a745;
+            color: white;
+            padding: 20px 0;
             text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            background-color: #218838;
+        }
+
+        nav li {
+            margin: 0 10px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: white;
+            padding: 10px 15px;
+            display: block;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        nav a:hover {
+            background-color: #1e7e34;
+        }
+
+        main {
             padding: 20px;
         }
 
-        .buttons {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            margin-top: 50px;
-        }
-
-        .button {
+        section {
+            margin-bottom: 20px;
             background-color: white;
-            color: #32CD32;
-            padding: 15px 30px;
-            text-transform: uppercase;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .button:hover {
-            background-color: #228B22;
-            color: white;
+        section h2 {
+            margin-top: 0;
+            color: #28a745;
         }
 
         footer {
-            margin-top: auto;
+            background-color: #218838;
+            color: white;
+            padding: 10px 0;
             text-align: center;
-            padding: 10px;
-            background-color: #228B22;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .calendar-container {
+            margin: 20px auto;
+            max-width: 800px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+
+        .button:hover {
+            background-color: #218838;
+        }
+
+        .widget {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .widget h2 {
+            margin-top: 0;
+        }
+
+        .widget p {
+            margin: 0;
+            color: #555;
+        }
+
+        .social-buttons button {
+            margin: 5px;
+            padding: 10px 15px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .social-buttons button:hover {
+            opacity: 0.9;
+        }
+
+        .social-buttons .google {
+            background-color: #4285F4;
+            color: white;
+        }
+
+        .social-buttons .youtube {
+            background-color: #FF0000;
+            color: white;
+        }
+
+        .social-buttons .instagram {
+            background-color: #C13584;
+            color: white;
         }
     </style>
 </head>
+
 <body>
     <header>
-        <h1>Вітаю вас на моєму вебсайті!</h1>
+        <h1>👋 Вітаю на MaxNT Official! 💚</h1>
+        <nav>
+            <ul>
+                <li><a href="#">✳️ Сервер (в розробці)</a></li>
+                <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSe9wBYfVKreFVYkH0A1JgpRUE3m70szFCRCERtmLO4Bsy65eQ/viewform?usp=preview">✳️ Про мене</a></li>
+                <li><a href="#">✳️ Classroom (в розробці)</a></li>
+                <li><a href="https://t.me/MaxNT_Live">✳️ Telegram | LIVE</a></li>
+                <li><a href="https://maxwinupdate.github.io/maxnt2017lv_paint/">✳️ Paint</a></li>
+                <li><a href="https://maxwinupdate.github.io/maxnt126_addons_v1/">✳️ Word + DeepState (Addons)</a></li>
+                <li><a href="https://maxwinupdate.github.io/chess_max21/">✳️ Chess ✳️</a></li>
+            </ul>
+        </nav>
     </header>
+
     <main>
-        <div class="buttons">
-            <button class="button">Кнопка 1</button>
-            <button class="button">Кнопка 2</button>
-            <button class="button">Кнопка 3</button>
-        </div>
+        <section class="calendar-container">
+            <h2>📅 Динамічний календар:</h2>
+            <div id="calendar"></div>
+        </section>
+
+        <section>
+            <h2>Про цей сайт</h2>
+            <p>Тут ви можете побачити опції та доповнення на сайті :)</p>
+        </section>
+
+        <section>
+            <h2>💚 Наша команда 💚</h2>
+            <ul>
+                <li>✅ Owner: Максим</li>
+                <li>✳️ Адміністратор: Влад</li>
+                <li>✳️ Модератор: Влад</li>
+            </ul>
+        </section>
+
+        <section class="widget">
+            <h2>Соцмережі</h2>
+            <div class="social-buttons">
+                <button class="google" onclick="window.location.href='https://www.google.com';">Google</button>
+                <button class="youtube" onclick="window.location.href='https://www.youtube.com/@MaxNT_Official';">YouTube</button>
+                <button class="instagram" onclick="window.location.href='https://www.instagram.com/maxnt_official';">Instagram</button>
+            </div>
+        </section>
     </main>
+
     <footer>
-        <p>© MaxNT Official 2017-2025. Усі права захищено.</p>
+        <p>© 2017-2025 | MaxNT Official © All rights reserved.</p>
     </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: [
+                    {
+                        title: 'Подія 1',
+                        start: '2025-05-10',
+                        color: '#28a745'
+                    },
+                    {
+                        title: 'Подія 2',
+                        start: '2025-05-15',
+                        end: '2025-05-17',
+                        color: '#dc3545'
+                    }
+                ]
+            });
+            calendar.render();
+        });
+    </script>
 </body>
+
 </html>
