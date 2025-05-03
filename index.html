@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Мій вебсайт</title>
+  <title>MaxNT Official</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * {
@@ -103,16 +103,19 @@
         <li><a href="#about">Про нас</a></li>
         <li><a href="#services">Послуги</a></li>
         <li><a href="#contact">Контакти</a></li>
+        <li><a href="#chess-widget">Шахи</a></li>
       </ul>
     </nav>
   </header>
 
   <main>
+    <!-- Chess Widget -->
     <section id="chess-widget" class="reveal" style="border: 3px solid #4caf50;">
       <h2 style="text-align: center; animation: pulse 2s infinite;"><span style="font-size: 1.5em;">♟️</span> Шаховий віджет</h2>
-      <iframe src="https://lichess.org/embed" style="border: 0" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
+      <iframe src="https://lichess.org/embed?theme=auto&bg=auto" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
     </section>
 
+    <!-- Placeholder for Other Widgets -->
     <section id="services" class="reveal">
       <h2>Наші послуги</h2>
       <ul>
@@ -121,10 +124,20 @@
         <li>Підтримка і SEO</li>
       </ul>
     </section>
+
+    <section id="calendar-widget" class="reveal" style="border: 3px solid #4caf50;">
+      <h2>📅 Робочий календар</h2>
+      <iframe src="https://calendar.google.com/calendar/embed?src=uk.ukrainian%23holiday%40group.v.calendar.google.com&ctz=Europe%2FKiev" style="border: 0" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
+    </section>
+
+    <section id="alert-map-widget" class="reveal" style="border: 3px solid #4caf50;">
+      <h2>🚨 Карта повітряної тривоги</h2>
+      <iframe src="https://alerts.in.ua/map" style="border: 0" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
+    </section>
   </main>
 
   <footer>
-    <p>&copy; 20172025 MaxNT Official. Всі права захищено.</p>
+    <p>&copy; 2017-2025 MaxNT Official. Всі права захищено.</p>
   </footer>
 
   <script>
