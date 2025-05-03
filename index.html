@@ -1,8 +1,8 @@
-<html lang="uk">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MaxNT Official</title>
+  <title>Мій вебсайт</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * {
@@ -47,6 +47,36 @@
       animation: fadeIn 1s ease-in-out both;
     }
 
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .btn {
+      background-color: #1e88e5;
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .btn:hover {
+      background-color: #1565c0;
+      transform: translateY(-2px);
+    }
+
+    iframe {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    }
+
     footer {
       text-align: center;
       padding: 1rem;
@@ -60,20 +90,21 @@
       100% { background-position: 0% 50%; }
     }
 
-    .btn {
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: all 0.3s ease, transform 0.3s ease;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    .btn.green:hover {
-      background-color: #388e3c;
+    section:hover {
+      transform: scale(1.02);
+      transition: transform 0.3s ease;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
 
     .reveal {
@@ -86,12 +117,6 @@
       opacity: 1;
       transform: translateY(0);
     }
-
-    section:hover {
-      transform: scale(1.02);
-      transition: transform 0.3s ease;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    }
   </style>
 </head>
 <body>
@@ -101,56 +126,49 @@
       <ul>
         <li><a href="#about">Про нас</a></li>
         <li><a href="#services">Послуги</a></li>
-        <li><a href="#contact">Контакти</a></li>
-        <li><a href="#chess-widget">Шахи</a></li>
+        <li><a href="#calendar">Календар</a></li>
       </ul>
     </nav>
   </header>
 
   <main>
-    <!-- Chess Widget -->
-    <section id="chess-widget" class="reveal" style="border: 3px solid #4caf50;">
-      <h2 style="text-align: center; animation: pulse 2s infinite;"><span style="font-size: 1.5em;">♟️</span> Шаховий віджет</h2>
-      <iframe src="https://lichess.org/embed?theme=auto&bg=auto" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
+    <section id="calendar" class="reveal">
+      <h2 style="text-align: center; animation: pulse 2s infinite;">📅 Робочий календар</h2>
+      <iframe 
+        src="https://calendar.google.com/calendar/embed?src=uk.ukrainian%23holiday%40group.v.calendar.google.com&ctz=Europe/Kiev" 
+        style="width: 100%; height: 600px;" 
+        frameborder="0" 
+        scrolling="no">
+      </iframe>
     </section>
 
-    <!-- Placeholder for Other Widgets -->
-    <section id="services" class="reveal">
-      <h2>Наші послуги</h2>
-      <ul>
-        <li>Веб-дизайн</li>
-        <li>Розробка сайтів</li>
-        <li>Підтримка і SEO</li>
-      </ul>
-    </section>
-
-    <section id="calendar-widget" class="reveal" style="border: 3px solid #4caf50;">
-      <h2>📅 Робочий календар</h2>
-      <iframe src="https://calendar.google.com/calendar/embed?src=uk.ukrainian%23holiday%40group.v.calendar.google.com&ctz=Europe%2FKiev" style="border: 0" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
-    </section>
-
-    <section id="alert-map-widget" class="reveal" style="border: 3px solid #4caf50;">
-      <h2>🚨 Карта повітряної тривоги</h2>
-      <iframe src="https://alerts.in.ua/map" style="border: 0" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
+    <section id="alert-map" class="reveal">
+      <h2 style="text-align: center; animation: pulse 2s infinite;">🚨 Карта повітряної тривоги</h2>
+      <iframe 
+        src="https://alerts.in.ua/map" 
+        style="width: 100%; height: 600px;" 
+        frameborder="0" 
+        scrolling="no">
+      </iframe>
     </section>
   </main>
 
   <footer>
-    <p>&copy; 2017-2025 MaxNT Official. Всі права захищено.</p>
+    <p>&copy; 2025 Мій вебсайт. Всі права захищено.</p>
   </footer>
 
-  <script>
-    const reveals = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1 });
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
 
-    reveals.forEach(el => observer.observe(el));
-  </script>
+  reveals.forEach(el => observer.observe(el));
+</script>
 </body>
 </html>
