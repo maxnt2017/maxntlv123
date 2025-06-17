@@ -1,3 +1,103 @@
-<html>
-<p> Вітаю! </p>
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure & Updates</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+        .password-widget {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+        }
+        .password-widget h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .password-widget input[type="password"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .password-widget button {
+            background-color: #4CAF50; /* Green button */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .password-widget button:hover {
+            background-color: #45a049;
+        }
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .feedback.error {
+            color: #e74c3c; /* Red for error */
+        }
+        .feedback.success {
+            color: #28a745; /* Green for success */
+        }
+        .feedback .icon {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="password-widget">
+        <h2>Введіть Пароль</h2>
+        <input type="password" id="passwordInput" placeholder="Пароль">
+        <button onclick="checkPassword()">Відкрити</button>
+        <div id="feedbackMessage" class="feedback"></div>
+    </div>
+
+    <script>
+        function checkPassword() {
+            const correctPassword = "qwertyball1234567";
+            const enteredPassword = document.getElementById("passwordInput").value;
+            const feedbackMessage = document.getElementById("feedbackMessage");
+            const googleDriveLink = "https://drive.google.com/drive/folders/1c5XSBL8mPaTmfxpiiYLSzQZZKUpFV_rv?usp=sharing";
+
+            feedbackMessage.innerHTML = ""; // Clear previous messages
+            feedbackMessage.classList.remove('error', 'success');
+
+            if (enteredPassword === correctPassword) {
+                feedbackMessage.innerHTML = '<span class="icon">&#10004;</span> Успішно! Перенаправляємо...'; // Green checkmark
+                feedbackMessage.classList.add('success');
+                // Redirect to the Google Drive link after a short delay
+                setTimeout(() => {
+                    window.location.href = googleDriveLink;
+                }, 1500); // Redirect after 1.5 seconds
+            } else {
+                feedbackMessage.innerHTML = '<span class="icon">&#10060;</span> Неправильний пароль!'; // Red cross
+                feedbackMessage.classList.add('error');
+            }
+        }
+    </script>
+
+</body>
 </html>
