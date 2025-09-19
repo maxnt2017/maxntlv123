@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Word Pro X</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.5.0/math.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato&family=Montserrat&family=Open+Sans&family=Oswald&family=Roboto&family=Tinos&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f4f4; --editor-bg-color: #fff; --toolbar-bg-color: #fff; --text-color: #333; --primary-color: #007bff; --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        body { font-family: 'Open Sans', Arial, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s; display: flex; flex-direction: column; align-items: center; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 900px; margin-bottom: 15px; }
+        #datetime-container { font-size: 14px; color: #555; background-color: var(--toolbar-bg-color); padding: 8px 12px; border-radius: 8px; box-shadow: 0 2px 5px var(--shadow-color); }
+        .theme-switcher { display: flex; gap: 8px; background-color: var(--toolbar-bg-color); padding: 8px; border-radius: 8px; box-shadow: 0 2px 5px var(--shadow-color); }
+        .theme-switcher button { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #ccc; cursor: pointer; transition: transform 0.2s; }
+        .theme-switcher button:hover { transform: scale(1.15); }
+        #theme-white { background-color: #f4f4f4; } #theme-green { background-color: #28a745; } #theme-lime { background-color: #cddc39; } #theme-salad { background-color: #d4edda; } #theme-blue { background-color: #007bff; } #theme-red { background-color: #dc3545; } #theme-gray { background-color: #6c757d; } #theme-dark { background-color: #343a40; }
+        
+        .toolbar { background-color: var(--toolbar-bg-color); padding: 10px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px var(--shadow-color); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; width: 100%; max-width: 900px; }
+        .toolbar button, .toolbar select { background-color: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 0 12px; cursor: pointer; font-size: 16px; font-family: inherit; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; min-width: 42px; height: 42px; box-shadow: 0 1px 2px var(--shadow-color); }
+        .toolbar button:hover, .toolbar select:hover { border-color: #aaa; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.12); }
+        .toolbar .lang-btn { padding: 0 16px; font-size: 14px; font-weight: 600; }
+        
+        #editor-container { width: 100%; max-width: 900px; }
+        #editor { min-height: 700px; padding: 40px; border: 1px solid #ddd; border-radius: 8px 8px 0 0; background-color: var(--editor-bg-color); box-sizing: border-box; font-size: 16px; line-height: 1.6; outline: none; box-shadow: 0 4px 12px var(--shadow-color); }
+        
+        /* ... (інші стилі без змін) ... */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 600px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); position: relative; }
+        .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 20px; cursor: pointer; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 5px; max-height: 200px; overflow-y: auto; }
+        .emoji-grid span { cursor: pointer; font-size: 24px; text-align: center; }
+        #math-output { margin-top: 10px; padding: 10px; background-color: #e9ecef; border-radius: 5px; font-weight: bold; }
+        footer { margin-top: 30px; padding: 10px; font-size: 14px; color: #777; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div id="datetime-container"></div>
+        <div class="theme-switcher">
+            <button id="theme-dark" onclick="changeTheme('dark')"></button> <button id="theme-white" onclick="changeTheme('white')"></button> <button id="theme-gray" onclick="changeTheme('gray')"></button> <button id="theme-green" onclick="changeTheme('green')"></button> <button id="theme-lime" onclick="changeTheme('lime')"></button> <button id="theme-salad" onclick="changeTheme('salad')"></button> <button id="theme-red" onclick="changeTheme('red')"></button> <button id="theme-blue" onclick="changeTheme('blue')"></button>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <button onclick="exportAsDoc()" title="Зберегти як .DOC">DOC</button>
+        <button onclick="exportAsPdf()" title="Зберегти як .PDF">PDF</button>
+        <select id="font-family" onchange="formatText('fontname', this.value)" title="Шрифт">
+            <optgroup label="Web Safe">
+                <option value="Arial">Arial</option> <option value="Verdana">Verdana</option> <option value="Georgia">Georgia</option> <option value="Times New Roman">Times New Roman</option> <option value="Courier New">Courier New</option>
+            </optgroup>
+            <optgroup label="Google Fonts">
+                <option value="Roboto" style="font-family: 'Roboto', sans-serif;">Roboto</option> <option value="Lato" style="font-family: 'Lato', sans-serif;">Lato</option> <option value="Montserrat" style="font-family: 'Montserrat', sans-serif;">Montserrat</option> <option value="Oswald" style="font-family: 'Oswald', sans-serif;">Oswald</option> <option value="Open Sans" style="font-family: 'Open Sans', sans-serif;">Open Sans</option> <option value="Tinos" style="font-family: 'Tinos', serif;">Tinos</option>
+            </optgroup>
+            <optgroup label="System Fonts">
+                 <option value="Calibri">Calibri</option> <option value="Aptos">Aptos</option> <option value="Harlow Solid Italic">Harlow Solid Italic</option>
+            </optgroup>
+        </select>
+        <button onclick="formatText('bold')" title="Жирний"><b>B</b></button>
+        <button onclick="formatText('italic')" title="Курсив"><i>I</i></button>
+        <button onclick="formatText('underline')" title="Підкреслений"><u>U</u></button>
+        <button onclick="showEmojiModal()" title="Вставити Emoji">😀</button>
+        <button onclick="showDiagramModal()" title="Вставити діаграму">💠</button>
+        <button onclick="showMathSolverModal()" title="Математичний розв'язувач">🧮</button>
+    </div>
+
+    <div id="editor-container">
+        <div id="editor" contenteditable="true" spellcheck="false"></div>
+    </div>
+    
+    <footer>
+        <p>2025(c) | MaxNT Official, всі права захищені!</p>
+    </footer>
+
+    <div id="emojiModal" class="modal"><div class="modal-content"><span class="close-button" onclick="closeModal('emojiModal')">&times;</span><h2>Emoji</h2><div class="emoji-grid"></div></div></div>
+    <div id="diagramModal" class="modal"><div class="modal-content"><span class="close-button" onclick="closeModal('diagramModal')">&times;</span><h2>Вставити фігуру з текстом</h2><input type="text" id="shape-text" placeholder="Текст всередині фігури" style="width: 100%; margin-bottom: 10px;"><select id="shape-type" style="margin-bottom:10px;"><option value="rect">Прямокутник</option><option value="circle">Коло</option><option value="arrow">Стрілка →</option></select><button onclick="insertSvgShape()">Вставити</button></div></div>
+    <div id="mathSolverModal" class="modal"><div class="modal-content"><span class="close-button" onclick="closeModal('mathSolverModal')">&times;</span><h2>Математичний розв'язувач</h2><p>Приклади: <code>2+2</code>, <code>det([1, 2; 3, 4])</code>, <code>integral('x^2', 'x')</code>, <code>derivative('x^2', 'x')</code></p><input type="text" id="math-input" placeholder="Введіть вираз..." style="width: 100%; margin-bottom: 10px;"><button onclick="solveMath()">Обчислити</button><div id="math-output"></div></div></div>
+
+    <script>
+        window.jsPDF = window.jspdf.jsPDF;
+        const editor = document.getElementById('editor');
+
+        // --- НОВІ ФУНКЦІЇ ---
+        function exportAsPdf() {
+            html2canvas(editor).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF();
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save("document.pdf");
+            });
+        }
+
+        function exportAsDoc() {
+            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML to Word</title></head><body>";
+            const footer = "</body></html>";
+            const sourceHTML = header + editor.innerHTML + footer;
+            const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+            const fileDownload = document.createElement("a");
+            document.body.appendChild(fileDownload);
+            fileDownload.href = source;
+            fileDownload.download = 'document.doc';
+            fileDownload.click();
+            document.body.removeChild(fileDownload);
+        }
+        
+        function insertSvgShape() {
+            const type = document.getElementById('shape-type').value;
+            const text = document.getElementById('shape-text').value;
+            let svgHtml = '';
+            const svgAttrs = `contenteditable="false" style="width:150px; height:100px; cursor:move;"`;
+            
+            switch(type) {
+                case 'rect':
+                    svgHtml = `<svg ${svgAttrs} viewBox="0 0 150 100"><rect x="1" y="1" width="148" height="98" fill="#e9ecef" stroke="#333" /><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle">${text}</text></svg>`;
+                    break;
+                case 'circle':
+                    svgHtml = `<svg ${svgAttrs} viewBox="0 0 150 100"><circle cx="75" cy="50" r="48" fill="#e9ecef" stroke="#333" /><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle">${text}</text></svg>`;
+                    break;
+                case 'arrow':
+                    svgHtml = `<svg ${svgAttrs} viewBox="0 0 150 100"><defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" /></marker></defs><line x1="10" y1="50" x2="140" y2="50" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" /><text x="50%" y="40%" dominant-baseline="middle" text-anchor="middle">${text}</text></svg>`;
+                    break;
+            }
+            formatText('insertHTML', `<span>&nbsp;</span>${svgHtml}<span>&nbsp;</span>`);
+            closeModal('diagramModal');
+        }
+        
+        function solveMath() {
+            const input = document.getElementById('math-input').value;
+            const outputDiv = document.getElementById('math-output');
+            try {
+                const result = math.evaluate(input);
+                outputDiv.textContent = `Результат: ${result.toString()}`;
+            } catch (e) {
+                outputDiv.textContent = `Помилка: ${e.message}`;
+            }
+        }
+
+        // --- ІСНУЮЧІ ФУНКЦІЇ (ОНОВЛЕНІ) ---
+        const themes = {
+            white: { bg: '#f4f4f4', isDark: false }, green: { bg: '#28a745', isDark: true }, lime: {bg: '#cddc39', isDark: false}, salad: {bg: '#d4edda', isDark: false},
+            blue: { bg: '#007bff', isDark: true }, red: { bg: '#dc3545', isDark: true }, gray: { bg: '#6c757d', isDark: true }, dark: { bg: '#343a40', isDark: true }
+        };
+        function changeTheme(themeKey) {
+            const theme = themes[themeKey];
+            const root = document.documentElement;
+            root.style.setProperty('--bg-color', theme.bg);
+            if (theme.isDark) {
+                root.style.setProperty('--editor-bg-color', '#495057'); root.style.setProperty('--toolbar-bg-color', '#495057'); root.style.setProperty('--text-color', '#f8f9fa');
+            } else {
+                root.style.setProperty('--editor-bg-color', '#fff'); root.style.setProperty('--toolbar-bg-color', '#fff'); root.style.setProperty('--text-color', '#333');
+            }
+        }
+        function updateTime() { document.getElementById('datetime-container').textContent = new Date().toLocaleString('uk-UA', { timeZone: 'Europe/Kyiv', dateStyle: 'full', timeStyle: 'medium' }); }
+        
+        function formatText(command, value = null) { document.execCommand(command, false, value); editor.focus(); }
+        
+        function showModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function showEmojiModal() { showModal('emojiModal'); }
+        function showDiagramModal() { showModal('diagramModal'); }
+        function showMathSolverModal() { showModal('mathSolverModal'); }
+
+        // Ініціалізація сторінки
+        window.onload = () => {
+            updateTime();
+            setInterval(updateTime, 1000);
+            editor.innerHTML = localStorage.getItem('webWordContent') || `<p>Вітаємо в Web Word Pro X! 🚀</p>`;
+            // Заповнення Emoji-пікера
+            const emojiGrid = document.querySelector('.emoji-grid');
+            const emojis = ['😀', '😂', '❤️', '👍', '🔥', '🚀', '✅', '✨', '🎉', '💡', ' українська', '⚙️', '🔗', '🖼️', '📊', '✍️'];
+            emojis.forEach(emoji => {
+                const span = document.createElement('span');
+                span.textContent = emoji;
+                span.onclick = () => { formatText('insertText', emoji); closeModal('emojiModal'); };
+                emojiGrid.appendChild(span);
+            });
+        };
+        window.onbeforeunload = () => { localStorage.setItem('webWordContent', editor.innerHTML); };
+    </script>
+</body>
+</html>
