@@ -1,0 +1,515 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конструктор Блок-Схем</title>
+    <style>
+        :root {
+            --primary-bg: #1e1e1e;
+            --secondary-bg: #2d2d30;
+            --border-color: #444;
+            --text-color: #d4d4d4;
+            --accent-color: #007acc;
+            --shape-bg: #3c3c3c;
+            --connector-color: #9a9a9a;
+            --connector-hover: #00aaff;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+        }
+
+        /* --- Панель інструментів --- */
+        #toolbar {
+            width: 200px;
+            background-color: var(--secondary-bg);
+            border-right: 2px solid var(--border-color);
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 2px 0 10px var(--shadow-color);
+            z-index: 10;
+        }
+
+        #toolbar h3 {
+            margin: 0 0 20px 0;
+            color: var(--accent-color);
+            text-align: center;
+            width: 100%;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .shape {
+            background-color: var(--shape-bg);
+            border: 2px solid var(--border-color);
+            margin-bottom: 20px;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            user-select: none;
+            transition: transform 0.2s, background-color 0.2s;
+            position: relative;
+        }
+
+        .shape:hover {
+            transform: scale(1.05);
+            background-color: var(--accent-color);
+            border-color: var(--connector-hover);
+        }
+
+        .shape:active {
+            cursor: grabbing;
+        }
+
+        #rect {
+            width: 120px;
+            height: 60px;
+            border-radius: 4px;
+        }
+
+        #diamond {
+            width: 90px;
+            height: 90px;
+            transform: rotate(45deg);
+        }
+
+        #diamond span {
+            transform: rotate(-45deg);
+        }
+
+        #oval {
+            width: 120px;
+            height: 60px;
+            border-radius: 50%;
+        }
+        
+        #parallelogram {
+            width: 140px;
+            height: 60px;
+            transform: skewX(-20deg);
+        }
+        
+        #parallelogram span {
+            transform: skewX(20deg);
+        }
+        
+        #toolbar button {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--accent-color);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: auto;
+            transition: background-color 0.2s;
+        }
+
+        #toolbar button:hover {
+            background-color: #005f9e;
+        }
+
+        /* --- Робоча область --- */
+        #canvas-container {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: var(--primary-bg);
+            background-image:
+                linear-gradient(var(--border-color) 1px, transparent 1px),
+                linear-gradient(to right, var(--border-color) 1px, var(--primary-bg) 1px);
+            background-size: 20px 20px;
+        }
+        
+        .canvas-shape {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            cursor: move;
+            min-width: 100px;
+            min-height: 50px;
+        }
+
+        .canvas-shape.selected {
+            border: 2px dashed var(--accent-color) !important;
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .shape-text {
+            padding: 10px;
+            text-align: center;
+            outline: none;
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-size: 14px;
+            cursor: text;
+        }
+
+        .connector-point {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--connector-color);
+            border-radius: 50%;
+            cursor: crosshair;
+            transition: background-color 0.2s;
+        }
+        
+        .connector-point:hover, .connector-point.active {
+            background-color: var(--connector-hover);
+        }
+
+        .connector-point.top { top: -5px; left: 50%; transform: translateX(-50%); }
+        .connector-point.bottom { bottom: -5px; left: 50%; transform: translateX(-50%); }
+        .connector-point.left { left: -5px; top: 50%; transform: translateY(-50%); }
+        .connector-point.right { right: -5px; top: 50%; transform: translateY(-50%); }
+        
+        #line-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toolbar">
+        <h3>Фігури</h3>
+        <div class="shape" id="rect" draggable="true" data-shape="rect"><span>Блок</span></div>
+        <div class="shape" id="diamond" draggable="true" data-shape="diamond"><span>Умова</span></div>
+        <div class="shape" id="oval" draggable="true" data-shape="oval"><span>Початок/Кінець</span></div>
+        <div class="shape" id="parallelogram" draggable="true" data-shape="parallelogram"><span>Ввід/Вивід</span></div>
+        
+        <button id="save-btn">Зберегти як PNG</button>
+    </div>
+
+    <div id="canvas-container">
+        <svg id="line-canvas"></svg>
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const shapes = document.querySelectorAll('#toolbar .shape');
+            const canvas = document.getElementById('canvas');
+            const lineCanvas = document.getElementById('line-canvas');
+            const saveBtn = document.getElementById('save-btn');
+
+            let shapeCounter = 0;
+            let activeShape = null;
+            let isDragging = false;
+            let startPos = { x: 0, y: 0 };
+            let selectedShape = null;
+
+            let isConnecting = false;
+            let startConnector = null;
+            let tempLine = null;
+            let connections = [];
+
+            // Перетягування фігур з панелі
+            shapes.forEach(shape => {
+                shape.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('shape', e.target.dataset.shape);
+                });
+            });
+
+            canvas.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+
+            canvas.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const shapeType = e.dataTransfer.getData('shape');
+                const x = e.clientX - canvas.getBoundingClientRect().left - 60;
+                const y = e.clientY - canvas.getBoundingClientRect().top - 30;
+                createShape(shapeType, x, y);
+            });
+            
+            function createShape(type, x, y) {
+                const newShape = document.createElement('div');
+                newShape.className = `shape canvas-shape`;
+                newShape.id = `shape-${shapeCounter++}`;
+                newShape.style.left = `${x}px`;
+                newShape.style.top = `${y}px`;
+                newShape.style.zIndex = 2;
+                
+                // Створення текстового поля
+                const text = document.createElement('div');
+                text.className = 'shape-text';
+                text.textContent = 'Текст';
+                text.setAttribute('contenteditable', 'true');
+                
+                // Застосування стилів для різних фігур
+                let shapeContent;
+                switch (type) {
+                    case 'diamond':
+                        newShape.style.width = '120px';
+                        newShape.style.height = '120px';
+                        newShape.style.transform = 'rotate(45deg)';
+                        shapeContent = document.createElement('span');
+                        shapeContent.style.transform = 'rotate(-45deg)';
+                        shapeContent.appendChild(text);
+                        newShape.appendChild(shapeContent);
+                        break;
+                    case 'oval':
+                        newShape.style.width = '150px';
+                        newShape.style.height = '70px';
+                        newShape.style.borderRadius = '50%';
+                        newShape.appendChild(text);
+                        break;
+                    case 'parallelogram':
+                        newShape.style.width = '160px';
+                        newShape.style.height = '70px';
+                        newShape.style.transform = 'skewX(-20deg)';
+                        shapeContent = document.createElement('span');
+                        shapeContent.style.transform = 'skewX(20deg)';
+                        shapeContent.appendChild(text);
+                        newShape.appendChild(shapeContent);
+                        break;
+                    default: // rect
+                        newShape.style.width = '150px';
+                        newShape.style.height = '70px';
+                        newShape.style.borderRadius = '4px';
+                        newShape.appendChild(text);
+                }
+                newShape.style.background = 'var(--shape-bg)';
+                newShape.style.border = '2px solid var(--border-color)';
+
+
+                canvas.appendChild(newShape);
+                addShapeListeners(newShape);
+                addConnectorPoints(newShape);
+            }
+
+            function addShapeListeners(shape) {
+                shape.addEventListener('mousedown', (e) => {
+                    if (e.target.classList.contains('connector-point')) return;
+                    isDragging = true;
+                    activeShape = shape;
+                    startPos.x = e.clientX - shape.offsetLeft;
+                    startPos.y = e.clientY - shape.offsetTop;
+                    selectShape(shape);
+                    e.stopPropagation();
+                });
+
+                shape.addEventListener('dblclick', (e) => {
+                    const textEl = shape.querySelector('.shape-text');
+                    if (textEl) {
+                        textEl.focus();
+                        document.execCommand('selectAll', false, null);
+                    }
+                });
+            }
+
+            function addConnectorPoints(shape) {
+                ['top', 'bottom', 'left', 'right'].forEach(pos => {
+                    const point = document.createElement('div');
+                    point.className = `connector-point ${pos}`;
+                    point.dataset.shapeId = shape.id;
+                    point.dataset.position = pos;
+                    shape.appendChild(point);
+
+                    point.addEventListener('mousedown', (e) => {
+                        e.stopPropagation();
+                        isConnecting = true;
+                        startConnector = point;
+                        point.classList.add('active');
+                        
+                        const rect = canvas.getBoundingClientRect();
+                        const startX = e.clientX - rect.left;
+                        const startY = e.clientY - rect.top;
+
+                        tempLine = createSvgLine(startX, startY, startX, startY);
+                        lineCanvas.appendChild(tempLine);
+                    });
+                    
+                    point.addEventListener('mouseup', (e) => {
+                        if (isConnecting && startConnector && startConnector !== e.currentTarget) {
+                            const endConnector = e.currentTarget;
+                            if(startConnector.dataset.shapeId !== endConnector.dataset.shapeId) {
+                                connections.push({ start: startConnector, end: endConnector });
+                                drawConnections();
+                            }
+                        }
+                        
+                        if(tempLine) {
+                            tempLine.remove();
+                            tempLine = null;
+                        }
+                        isConnecting = false;
+                        if(startConnector) startConnector.classList.remove('active');
+                        startConnector = null;
+                    });
+                });
+            }
+            
+            function createSvgLine(x1, y1, x2, y2) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1);
+                line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2);
+                line.setAttribute('y2', y2);
+                line.setAttribute('stroke', 'var(--connector-hover)');
+                line.setAttribute('stroke-width', '2');
+                line.setAttribute('marker-end', 'url(#arrow)');
+                return line;
+            }
+            
+            function createArrowMarker() {
+                 const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                 const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+                 marker.setAttribute('id', 'arrow');
+                 marker.setAttribute('viewBox', '0 0 10 10');
+                 marker.setAttribute('refX', '8');
+                 marker.setAttribute('refY', '5');
+                 marker.setAttribute('markerWidth', '6');
+                 marker.setAttribute('markerHeight', '6');
+                 marker.setAttribute('orient', 'auto-start-reverse');
+                 const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                 path.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+                 path.setAttribute('fill', 'var(--connector-hover)');
+                 marker.appendChild(path);
+                 defs.appendChild(marker);
+                 lineCanvas.appendChild(defs);
+            }
+            createArrowMarker();
+            
+            function getConnectorPosition(connector) {
+                const shape = document.getElementById(connector.dataset.shapeId);
+                const shapeRect = shape.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+                
+                const pos = {
+                    x: shape.offsetLeft + shape.offsetWidth / 2,
+                    y: shape.offsetTop + shape.offsetHeight / 2,
+                };
+
+                switch (connector.dataset.position) {
+                    case 'top':    pos.y = shape.offsetTop; break;
+                    case 'bottom': pos.y = shape.offsetTop + shape.offsetHeight; break;
+                    case 'left':   pos.x = shape.offsetLeft; break;
+                    case 'right':  pos.x = shape.offsetLeft + shape.offsetWidth; break;
+                }
+                return pos;
+            }
+
+            function drawConnections() {
+                lineCanvas.querySelectorAll('line').forEach(l => l.remove());
+                connections.forEach(conn => {
+                    const startPos = getConnectorPosition(conn.start);
+                    const endPos = getConnectorPosition(conn.end);
+                    const line = createSvgLine(startPos.x, startPos.y, endPos.x, endPos.y);
+                    lineCanvas.appendChild(line);
+                });
+            }
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && activeShape) {
+                    const newX = e.clientX - startPos.x;
+                    const newY = e.clientY - startPos.y;
+                    activeShape.style.left = `${newX}px`;
+                    activeShape.style.top = `${newY}px`;
+                    drawConnections();
+                }
+                if (isConnecting && tempLine) {
+                    const rect = canvas.getBoundingClientRect();
+                    tempLine.setAttribute('x2', e.clientX - rect.left);
+                    tempLine.setAttribute('y2', e.clientY - rect.top);
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                activeShape = null;
+
+                if(isConnecting) {
+                    if(tempLine) tempLine.remove();
+                    tempLine = null;
+                    isConnecting = false;
+                    if(startConnector) startConnector.classList.remove('active');
+                    startConnector = null;
+                }
+            });
+
+            function selectShape(shape) {
+                if (selectedShape) {
+                    selectedShape.classList.remove('selected');
+                }
+                selectedShape = shape;
+                if (selectedShape) {
+                    selectedShape.classList.add('selected');
+                }
+            }
+
+            canvas.addEventListener('mousedown', (e) => {
+                if(e.target === canvas) {
+                    selectShape(null);
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if ((e.key === 'Delete' || e.key === 'Backspace') && selectedShape) {
+                    const shapeId = selectedShape.id;
+                    connections = connections.filter(conn =>
+                        conn.start.dataset.shapeId !== shapeId && conn.end.dataset.shapeId !== shapeId
+                    );
+                    selectedShape.remove();
+                    selectedShape = null;
+                    drawConnections();
+                }
+            });
+            
+            // Збереження як PNG
+            saveBtn.addEventListener('click', async () => {
+                selectShape(null); // Зняти виділення
+                // Потрібна бібліотека html2canvas для цієї функції
+                // Оскільки це один файл, я додаю її через CDN
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                document.head.appendChild(script);
+
+                script.onload = () => {
+                    html2canvas(document.querySelector("#canvas-container"), {
+                        backgroundColor: "var(--primary-bg)",
+                    }).then(canvasImage => {
+                        const link = document.createElement('a');
+                        link.download = 'block-scheme.png';
+                        link.href = canvasImage.toDataURL('image/png');
+                        link.click();
+                    });
+                };
+            });
+        });
+    </script>
+</body>
+</html>
